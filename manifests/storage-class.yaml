@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-driver-storage-test
+provisioner: csi-file-driver.dharmendrashaw.in
+volumeBindingMode: Immediate
+

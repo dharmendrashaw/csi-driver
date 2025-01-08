@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: csi-driver-test
+  name: csi-driver-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-driver-test
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: csi-driver-test
+    spec:
+      serviceAccount: csi-driver-service-account
+      containers:
+      - image: registry.k8s.io/sig-storage/csi-provisioner:v5.1.0
+        name: csi-external-provisioner
+        args:
+        - "--csi-address=$(CSI_ENDPOINT)"
+        env:
+        - name: CSI_ENDPOINT
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy
+          name: domain-socket
+      - image: dharmendrashaw/csi-driver-test:3.0.0
+        name: csi-driver-test
+        resources: {}
+        args:
+        - "--endpoint=$(CSI_ENDPOINT)"
+        - "--name=csi-file-driver.dharmendrashaw.in"
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - mountPath: /var/lib/csi/sockets/pluginproxy
+          name: domain-socket
+      volumes:
+      - name: domain-socket
+        emptyDir: {}
+
+status: {}
